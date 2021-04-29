@@ -1,0 +1,7 @@
+# dependencies
+/service/node_modules
+/service/graph2vec
+/service/subGraphs_6
+/service/data
+/client/node_modules
+

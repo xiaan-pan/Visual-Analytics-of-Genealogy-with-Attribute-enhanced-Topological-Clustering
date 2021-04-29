@@ -1,0 +1,21 @@
+.app {
+    width: 100%;
+    height: 720px;
+    /* background-color: red; */
+}
+
+.left {
+    width: 21%;
+    height: 100%;
+    /* background-color: red; */
+    float: left;
+    margin: 2px 0px 0px 2px;
+}
+
+.center {
+    width: 600px;
+    height: 100%;
+    /* background-color: red; */
+    float: left;
+    margin-left: 2px;
+}
