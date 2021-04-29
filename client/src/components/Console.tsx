@@ -79,13 +79,17 @@ class Console extends Component <ConsoleProps, ConsoleState>{
                             }}
                             onClick = {
                                 () => {
-                                    changeScatterLoading(true, 'Projecting')
-                                    setTimeout(() => {
-                                        changeScatterLoading(true, 'Reducing dimensions')
-                                        this.setState({scatterIsLoading: true}, () => {
-                                            this.changeScatter();
-                                        })
-                                    }, 3000)
+                                    this.setState({scatterIsLoading: true, scatterIsLoadingText: 'Projecting'}, () => {
+                                        changeScatterLoading(true, 'Projecting')
+                                        setTimeout(() => {
+                                            this.setState({scatterIsLoadingText: 'Reducing'}, () => {
+                                                changeScatterLoading(true, 'Reducing dimensions')
+                                                this.changeScatter();
+                                            })
+                                        
+                                        }, 4000)
+                                    })
+                                    
                                 }
                             }
                         >
@@ -110,7 +114,7 @@ class Console extends Component <ConsoleProps, ConsoleState>{
                             取消
                         </Button> */}
                     </div>
-                    <div className='scatter-settings-view2'>
+                    {/* <div className='scatter-settings-view2'>
                         <Switch
                             checkedChildren={<CheckOutlined />}
                             unCheckedChildren={<CloseOutlined />}
@@ -135,8 +139,8 @@ class Console extends Component <ConsoleProps, ConsoleState>{
                         }}>
                             structure weight: [{this.state.sv.toFixed(2)}]
                         </div>
-                    </div>
-                    <Slider tooltipVisible={false} max={1} min={0} step={0.01} value={this.state.sv} style={{
+                    </div> */}
+                    {/* <Slider tooltipVisible={false} max={1} min={0} step={0.01} value={this.state.sv} style={{
                             width: '100px',
                             position: 'absolute',
                             top: '65px',
@@ -146,7 +150,7 @@ class Console extends Component <ConsoleProps, ConsoleState>{
                                 this.setState({sv, av: 1 - sv})
                                 
                             }
-                        }/>
+                        }/> */}
                     <div className='scatter-settings-view2'>
                         <Switch
                             checkedChildren={<CheckOutlined />}
@@ -217,27 +221,40 @@ class Console extends Component <ConsoleProps, ConsoleState>{
     
     private changeScatter(): void {
         const { changeClusterNumber, changeScatterLoading } = this.props
-        axios.get('/tsne')
-            .then((res:AxiosResponse<any>) => {
-                const {success} = res.data
-                console.log(success);
-                if (success) {
-                    changeScatterLoading(true, 'Clustering')
-                    this.setState({scatterIsLoadingText: 'Clustering'}, () => {
-                        axios.get('/cluster?cluster_number=' + this.state.clusterNumber)
-                            .then((res:AxiosResponse<any>) => {
-                                const {data: scatterData} = res
-                                changeClusterNumber(scatterData)
-                                changeScatterLoading(false, 'Reducing dimensions')
-                                this.setState({scatterIsLoading: false, scatterIsLoadingText: 'Reducing dimensions'})
+        // axios.get('/tsne')
+        //     .then((res:AxiosResponse<any>) => {
+        //         const {success} = res.data
+        //         console.log(success);
+        //         if (success) {
+        //             changeScatterLoading(true, 'Clustering')
+        //             this.setState({scatterIsLoadingText: 'Clustering'}, () => {
+        //                 axios.get('/cluster?cluster_number=' + this.state.clusterNumber)
+        //                     .then((res:AxiosResponse<any>) => {
+        //                         const {data: scatterData} = res
+        //                         changeClusterNumber(scatterData)
+        //                         changeScatterLoading(false, 'Reducing dimensions')
+        //                         this.setState({scatterIsLoading: false, scatterIsLoadingText: 'Reducing dimensions'})
                                 
-                            })
+        //                     })
+        //             })
+        //         }
+        //         // this.setState({data}, () => {
+        //         //     this.setState({isLoading: false})
+        //         // })
+        //     })
+        setTimeout(() => {
+            changeScatterLoading(true, 'Clustering')
+            this.setState({scatterIsLoadingText: 'Clustering'}, () => {
+                axios.get('/cluster?cluster_number=' + this.state.clusterNumber)
+                    .then((res:AxiosResponse<any>) => {
+                        const {data: scatterData} = res
+                        changeClusterNumber(scatterData)
+                        changeScatterLoading(false, 'Reducing dimensions')
+                        this.setState({scatterIsLoading: false, scatterIsLoadingText: 'Reducing'})
+                        
                     })
-                }
-                // this.setState({data}, () => {
-                //     this.setState({isLoading: false})
-                // })
             })
+        }, 30_000)
         // axios.get('/cluster?cluster_number=' + this.state.clusterNumber)
         //     .then((res:AxiosResponse<any>) => {
         //         const {data} = res

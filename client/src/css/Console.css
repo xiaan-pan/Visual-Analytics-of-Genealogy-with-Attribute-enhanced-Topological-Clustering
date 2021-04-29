@@ -2,9 +2,8 @@
     width:100%;
     height: 210px;
     float: left;
-    background-color: white;
+    /* background-color: red; */
     border: 2px solid rgb(201,201,202);
-    
 }
 
 .console-title {
@@ -25,6 +24,8 @@
 .console-value {
     height: 376px;
 	width: 100%;
+    padding: 0px 20px;
+
     /* background-color: black; */
 }
 
@@ -48,7 +49,7 @@
 	height: 25px;
 	/* background-color: red; */
     /* padding-left: 0px; */
-	margin-right: 15px;
+	margin-right: 25px;
 	font-family:Arial;
 	line-height: 25px;
 	font-size: 15px;

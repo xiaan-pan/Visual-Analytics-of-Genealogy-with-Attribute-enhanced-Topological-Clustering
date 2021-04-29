@@ -44,15 +44,15 @@ class Scatter extends Component <ScatterProps, ScatterState>{
         })
         const xmax = Math.max(...xs), xmin = Math.min(...xs), ymax = Math.max(...ys), ymin = Math.min(...ys)
         let xk = 0, xb = 0, yk = 0, yb = 0
-        xk = 580 / (xmax - xmin)
-        xb = 590 - xmax * xk
-        yk = 336 / (ymax - ymin)
-        yb = 346 - ymax * yk
+        xk = 1050 / (xmax - xmin)
+        xb = 1060 - xmax * xk
+        yk = 663 / (ymax - ymin)
+        yb = 673 - ymax * yk
         const legends:Array<[number, number]> = []
         let sum = 0
         if (scatterData.length !== 0) {
             labels.forEach((value: number) => {
-                legends.push([sum, value / scatterData.length])
+                legends.push([sum, sum + value / scatterData.length])
                 sum += value / scatterData.length
             })
         }
@@ -63,17 +63,17 @@ class Scatter extends Component <ScatterProps, ScatterState>{
                     Projection View
                 </div>
                 <div className='scatter-value'>
-                    <Spin tip={isLoadingText} spinning={isLoading} style={{
-                        height: '100%'
+                    <Spin tip={isLoadingText} spinning={isLoading}  style={{
+                        height: '693px'
                     }}>
-                        <svg width='100%' height='376px' style={{
+                        <svg width='100%' height='693px' style={{
                             // backgroundColor: 'red'
                         }}>
                             {
                                 scatterData.map((value: ScatterType, index: number) => (
                                     <circle cx={xk * value['coor'][0] + xb} 
                                             cy={yk * value['coor'][1] + yb}
-                                            r={1.5} key={'scatter' + index}
+                                            r={2.5} key={'scatter' + index}
                                         style={{
                                             fill: colors[value['label']]
                                         }}
@@ -82,7 +82,7 @@ class Scatter extends Component <ScatterProps, ScatterState>{
                             }
                             {
                                 legends.map((value: [number, number], index: number) => (
-                                    <rect x={404+value[0]*190} y={356} width={(value[1] - value[0]) * 190} height={19}
+                                    <rect x={864+value[0]*190} y={673} width={(value[1] - value[0]) * 190} height={19}
                                         key={'legend' + index}
                                         style={{
                                             fill: colors[index],

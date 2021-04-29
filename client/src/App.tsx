@@ -22,10 +22,10 @@ class App extends Component<AppProps, AppState>{
 			<div className='app'>
 				<div className='left'>
 					<Console />
+					<Lines />
 				</div>
 				<div className='center'>
 					<Scatter />
-					<Lines />
 				</div>
 			</div>
 		)

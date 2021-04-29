@@ -29,16 +29,13 @@ class Lines extends Component <LinesProps, LinesState>{
                 <div className='lines-title'>
                     Parallel Coordinate View
                 </div>
-                <div>
-                    <svg width='100%' height='291px' style={{
-                        // backgroundColor: 'red'
-                    }}>
-                        {
-                            
-                        }
-                    </svg>
-
-                </div>
+                <svg width='100%' height='291px' style={{
+                    // backgroundColor: 'red'
+                }}>
+                    {
+                        
+                    }
+                </svg>
             </div>
         )
     }
