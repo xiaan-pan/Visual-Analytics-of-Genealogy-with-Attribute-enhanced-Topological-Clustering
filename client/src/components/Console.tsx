@@ -248,13 +248,14 @@ class Console extends Component <ConsoleProps, ConsoleState>{
                 axios.get('/cluster?cluster_number=' + this.state.clusterNumber)
                     .then((res:AxiosResponse<any>) => {
                         const {data: scatterData} = res
-                        changeClusterNumber(scatterData)
+                        console.log(typeof scatterData);
+                        changeClusterNumber(scatterData, ['PN', 'AA', 'VN', 'TS', 'AG'])
                         changeScatterLoading(false, 'Reducing dimensions')
                         this.setState({scatterIsLoading: false, scatterIsLoadingText: 'Reducing'})
                         
                     })
             })
-        }, 30_000)
+        }, 3_000)
         // axios.get('/cluster?cluster_number=' + this.state.clusterNumber)
         //     .then((res:AxiosResponse<any>) => {
         //         const {data} = res

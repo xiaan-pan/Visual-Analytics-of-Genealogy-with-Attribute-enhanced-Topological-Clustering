@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import Console from './components/Console';
 import Lines from './components/Lines';
 import Scatter from './components/Scatter';
+import Trees from './components/Trees';
 import './css/App.css'
 
 
@@ -22,6 +23,7 @@ class App extends Component<AppProps, AppState>{
 			<div className='app'>
 				<div className='left'>
 					<Console />
+					<Trees />
 					<Lines />
 				</div>
 				<div className='center'>

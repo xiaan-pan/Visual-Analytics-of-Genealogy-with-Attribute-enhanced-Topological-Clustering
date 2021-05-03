@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <!-- 引入 echarts.js -->
+    <script src="./echart.js"></script>
+    
+<script type="text/javascript" src="treeEcharts.js"></script>
+</head>
+<body>
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="main" style="width: 600px;height:400px;border: 1px solid black;"></div>
+    <script type="text/javascript">
+        
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+        var data = {
+            'name': 'a',
+            children: [
+                {
+                    name: 'b1',
+                    children: [
+                        {
+                            'name': 'c1'
+                        },
+                        {
+                            'name': 'c2'
+                        }
+                    ]
+                },
+                {
+                    name: 'b2',
+                    children: [
+                        {
+                            'name': 'c3'
+                        },
+                        {
+                            'name': 'c4'
+                        }
+                    ]
+                },
+            ]
+        }
+        // 指定图表的配置项和数据
+        var option = {
+        tooltip: {
+            trigger: 'item',
+            triggerOn: 'mousemove'
+        },
+        series: [
+            {
+                type: 'tree',
+
+                data: [data],
+
+                top: '1%',
+                left: '7%',
+                bottom: '1%',
+                right: '20%',
+
+                symbolSize: 7,
+
+                label: {
+                    position: 'left',
+                    verticalAlign: 'middle',
+                    align: 'right',
+                    fontSize: 9
+                },
+
+                leaves: {
+                    label: {
+                        position: 'right',
+                        verticalAlign: 'middle',
+                        align: 'left'
+                    }
+                },
+
+                emphasis: {
+                    focus: 'descendant'
+                },
+
+                expandAndCollapse: true,
+                animationDuration: 550,
+                animationDurationUpdate: 750
+            }
+        ]
+    };
+        myChart.showLoading();
+        // 使用刚指定的配置项和数据显示图表。
+        setTimeout(() => {
+            myChart.hideLoading();
+            myChart.setOption(option);
+            myChart.on('click', function (params) {
+                // 控制台打印数据的名称
+                console.log(params);
+            });
+        }, 2000)
+    </script>
+</body>
+</html>

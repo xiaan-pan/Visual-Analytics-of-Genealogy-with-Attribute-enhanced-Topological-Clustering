@@ -28,28 +28,32 @@ def dataset_reader(path):
 def Kernel_pls(file_dir, attrList):
     files = os.listdir(file_dir) # file_dir 目录下所有的文件名
     G, attrs = [], []
-    keys = ['PN', 'AA', 'VN', 'TS', 'AG', 'AW', 'AWS', 'NN']
+    keys = ['PN', 'AA', 'VN', 'TS', 'AG']
     for file in files:
         List = list(dataset_reader(file_dir + file))
         G.append([List[0].edges,List[1]])
         attrs.append([attrList[int(List[2])][key] for key in keys])
     wl_kernel = WeisfeilerLehman(n_iter=5, normalize=True, base_graph_kernel=VertexHistogram)
     G_train = wl_kernel.fit_transform(G).tolist()
-    # print("graphKernel Training finished")
-    # pls2 = PLSRegression(n_components=2)
-    # p = pls2.fit_transform(G_train, attrs)
-    # p0 = p[0].tolist()
-    # p1 = p[1].tolist()
-    # data_by_merge = [p0[i] + p1[i] for i in range(len(p0))]
+    print("graphKernel Training finished")
+    pls2 = PLSRegression(n_components=2)
+    p = pls2.fit_transform(G_train, attrs)
+    p0 = p[0].tolist()
+    p1 = p[1].tolist()
+    data_by_merge = [p0[i] + p1[i] for i in range(len(p0))]
     # tsne降维
-    tsne = TSNE(n_components=2).fit_transform(G_train).tolist()
-    with open('./coors_structure.json', 'w', encoding='utf8') as file:
-        json.dump(tsne, file)
+    tsne = TSNE(n_components=2).fit_transform(data_by_merge).tolist()
+    final = [{
+        'type': int(files[index].strip('.json')),
+        'coor': coor
+    } for index, coor in enumerate(tsne)]
+    with open('./data/data_by_tsne.json', 'w', encoding='utf8') as file:
+        json.dump(final, file)
 
 
 if __name__=='__main__':
-    file_dir = './subGraphs_6/'
-    trees = json.load(open('./data/subGraphs_6.json'))
+    file_dir = './subGraphs_1/'
+    trees = json.load(open('./data/subGraphs_1.json'))
     attrList = {}
     for tree in trees:
         attrList[tree['id']] = tree['attr']

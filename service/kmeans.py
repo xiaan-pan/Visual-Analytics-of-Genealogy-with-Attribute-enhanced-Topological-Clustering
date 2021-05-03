@@ -11,5 +11,7 @@ if __name__=='__main__':
     labels = [int(v) for v in transfer.labels_]
     for i, tree in enumerate(trees):
         tree['label'] = labels[i]
-    print(json.dumps(trees))
+    # print(json.dumps(trees))
+    with open('./data/data_by_kmeans.json', 'w', encoding='utf8') as file:
+        json.dump(trees, file)
 

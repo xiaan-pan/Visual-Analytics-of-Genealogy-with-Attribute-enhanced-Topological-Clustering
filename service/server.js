@@ -39,7 +39,13 @@ app.get('/cluster', (req, res) => {
             console.log("object")
             res.send({'success': false})
         }
-        res.send(stdout)
+        fs.readFile('./data/data_by_kmeans.json', {}, (err, data)=> {
+            if (err) {
+                return console.log(err)
+            }
+            res.send(data.toString())
+        })
+        // res.send(stdout)
     });
     
 })
