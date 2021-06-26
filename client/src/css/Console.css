@@ -1,6 +1,6 @@
 .console-view {
     width:100%;
-    height: 130px;
+    height: 100px;
     float: left;
     /* background-color: red; */
     border: 2px solid rgb(201,201,202);
@@ -22,11 +22,11 @@
 }
 
 .console-value {
-    height: 156px;
+    height: 78px;
 	width: 100%;
-    padding: 0px 20px;
+    padding: 0px 15px;
 
-    /* background-color: black; */
+    /* background-color: red; */
 }
 
 .scatter-settings-view1 {
@@ -45,22 +45,14 @@
 }
 
 .cluster-text {
-	width: 110px;
+	width: 121px;
 	height: 25px;
 	/* background-color: red; */
     /* padding-left: 0px; */
-	margin-right: 25px;
+	margin-right: 15px;
 	font-family:Arial;
 	line-height: 25px;
-	font-size: 15px;
+	font-size: 17px;
 	text-align: center;
     float: left;
-}
-
-.scatter-settings-view2 {
-	width: 100%;
-	height: 35px;
-	/* background-color: red; */
-	line-height: 30px;
-	padding: 0px 5px;
 }

@@ -5,12 +5,17 @@ import 'antd/dist/antd.css'
 import { ScatterType, scatterViewType, storeType } from '../types/propsTypes'
 import { connect } from 'react-redux'
 import {selectTree} from './../action'
+import axios, { AxiosResponse } from 'axios'
+import * as d3 from 'd3'
 
 interface ScatterProps extends scatterViewType {
     selectTree: typeof selectTree,
 }
 interface ScatterState {
     isSelect: boolean,
+    isShowGly: boolean,
+    glyData: Array<d3.DefaultArcObject>,
+    clusterNumber: number
 }
 class Scatter extends Component <ScatterProps, ScatterState>{
     private xk: number
@@ -22,6 +27,11 @@ class Scatter extends Component <ScatterProps, ScatterState>{
     private pos: number[]
     private width: number
     private height: number
+    private labelBySelect: number
+    private actions: Array<{
+        type: string,
+        [p: string]: any
+    }>
     public constructor(props : ScatterProps) {
         super(props)
         this.xk = 0
@@ -33,8 +43,13 @@ class Scatter extends Component <ScatterProps, ScatterState>{
         this.pos = []
         this.width = 0
         this.height = 0
+        this.labelBySelect = 0
+        this.actions = []
         this.state = {
-            isSelect: false
+            isSelect: false,
+            isShowGly: false,
+            glyData: [],
+            clusterNumber: -1
         }
     }
     
@@ -42,29 +57,47 @@ class Scatter extends Component <ScatterProps, ScatterState>{
         // const {isActive, isShow, } = this.state
         const { scatterData, isLoading, isLoadingText, selectList } = this.props
         const colors = [
-            '#37A2DA', '#e06343', '#37a354', '#b55dba', '#b5bd48', '#8378EA', '#96BFFF'
+            '#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99',
+            '#fb6a4a', '#fdbf6f', '#ff7f00', '#cab2d6', '#6a3d9a',
+            '#08306b', '#b15928', '#8dd3c7', '#ffffb3', '#bebada',
+            '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5',
+            '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f'
+            
         ]
-        const labels:Array<number> = [0, 0, 0, 0, 0, 0, 0, 0]
+        // const colors = [
+        //     '#8dd3c7', '#ffffb3', '#bebada', '#fb8072' ,'#80b1d3' ,
+        //     '#fdb462' ,'#b3de69' ,'#fccde5' ,'#d9d9d9' ,'#bc80bd' ,
+        //     '#ccebc5' ,'#ffed6f'
+        // ]
+        let labels:Array<any> = []
+        for (let i = 0; i < 100; i ++) {
+            labels.push({
+                index: i,
+                value: 0
+            })
+        }
         const xs:Array<number>= [], ys:Array<number> = []
         scatterData.forEach((value: ScatterType) => {
             xs.push(value['coor'][0])
             ys.push(value['coor'][1])
-            labels[value['label']] += 1
+            labels[value['label']]['value'] += 1
         })
+        labels.sort((a, b) => b['value'] - a['value'])
         const xmax = Math.max(...xs), xmin = Math.min(...xs), ymax = Math.max(...ys), ymin = Math.min(...ys)
         this.xk = 1050 / (xmax - xmin)
         this.xb = 1060 - xmax * this.xk
         this.yk = 663 / (ymax - ymin)
         this.yb = 673 - ymax * this.yk
-        const legends:Array<[number, number]> = []
+        const legends:Array<[number, number, number]> = []
         let sum = 0
         if (scatterData.length !== 0) {
-            labels.forEach((value: number) => {
-                legends.push([sum, sum + value / scatterData.length])
-                sum += value / scatterData.length
+            labels.forEach((value: any) => {
+                legends.push([sum, sum + value['value'] / scatterData.length, value['index']])
+                sum += value['value'] / scatterData.length
             })
         }
-        // console.log(labels, legends);
+        const arc: d3.Arc<any, d3.DefaultArcObject> = d3.arc()
+        // console.log(this.xk, this.xb, this.yk, this.yb);
         return (
             <div className='scatter-view'>
                 <div className='scatter-title'>
@@ -74,7 +107,7 @@ class Scatter extends Component <ScatterProps, ScatterState>{
                     <Spin tip={isLoadingText} spinning={isLoading}  style={{
                         height: '693px'
                     }}>
-                        <svg width='100%' height='693px' style={{
+                        <svg width='100%' height='693px' id='scatter' style={{
                             // backgroundColor: 'red'
                         }} onMouseDown={
                             (e) =>  {
@@ -116,29 +149,115 @@ class Scatter extends Component <ScatterProps, ScatterState>{
                                             cy={this.yk * value['coor'][1] + this.yb}
                                             r={2.5} key={'scatter' + index}
                                         style={{
-                                            fill: colors[value['label']],
+                                            fill: colors[value['label'] % 24],
                                             opacity: !(value['type'] in selectList) || selectList[value['type']] === true ? 1 : 0.2
                                         }}
                                     />
                                 ))
                             }
+                            
                             {
-                                legends.map((value: [number, number], index: number) => (
-                                    <rect x={864+value[0]*190} y={673} width={(value[1] - value[0]) * 190} height={19}
+                                legends.map((value: [number, number, number], index: number) => (
+                                    <rect x={714+value[0]*340} y={673} width={(value[1] - value[0]) * 340} height={19}
                                         key={'legend' + index}
                                         style={{
-                                            fill: colors[index],
-                                            // opacity: 0.2
+                                            fill: colors[value[2] % 24],
+                                            stroke: '#525252',   
+                                            strokeWidth: this.state.clusterNumber === value[2] ? '1px' : '0px' 
+
                                         }}
+                                        onClick={
+                                            () => {
+                                                this.selectPointsByLabel(value[2])
+                                                this.labelBySelect = value[2]
+                                                this.setState({clusterNumber: value[2]})
+                                            }
+                                        }
                                     />
                                 ))
                             }
                             
                         </svg>
+                        <svg width='1068px' height='693px' style={{
+                            position: 'fixed',
+                            top: '23px',
+                            right: '2px',
+                            backgroundColor: 'rgb(255, 255, 255, 0.85)',
+                            display: this.state.isShowGly ? 'inline-block' : 'none'
+                        }}>
+                            {
+                                this.state.glyData.map((value: d3.DefaultArcObject, index: number) => (
+                                    <path d={arc(value) as string}  
+                                        transform={`translate(${(value as any)['center'][0] === 534 ? 534 : this.xk*(value as any)['center'][0]+this.xb}, ${(value as any)['center'][1] === 346 ? 346 : this.yk*(value as any)['center'][1]+this.yb})`}
+                                        style={{
+                                            fill: (value as any)['color'],
+                                            stroke: 'white',
+                                            strokeWidth: '0.5px',
+                                            // transform: 'translate(534, 346)'
+                                        }}
+
+                                    key={'gly' + index} />
+                                ))
+                            }
+                            {
+                                legends.map((value: [number, number, number], index: number) => (
+                                    <rect x={714+value[0]*340} y={673} width={(value[1] - value[0]) * 340} height={19}
+                                        key={'legend' + index}
+                                        style={{
+                                            fill: colors[value[2] % 24],
+                                            stroke: '#525252',   
+                                            strokeWidth: this.state.clusterNumber === value[2] ? '1px' : '0px'  
+                                        }}
+                                        onClick={
+                                            () => {
+                                                this.selectPointsByLabel(value[2])
+                                                this.showGly(value[2])
+                                                this.setState({clusterNumber: value[2]})
+
+                                            }
+                                        }
+                                    />
+                                ))
+                            }
+                        </svg>
+                        <svg viewBox="0 0 1024 1024" width="20" height="20"  style={{
+                            position: 'absolute',
+                            top: '5px',
+                            right: '110px',
+                            zIndex: 9
+                        }} onClick={
+                            () => {
+                                // this.setState({ isSelect: true })
+                                document.getElementById('gly-button')!.style.fill = '#1296db'
+                                // this.showGly(this.labelBySelect)
+                                this.showGly(666)
+
+                            }
+                        } onMouseOver={
+                            () => {
+                                if (this.state.isSelect) return
+                                const color:string = document.getElementById('gly-button')!.style.fill
+                                document.getElementById('gly-button')!.style.fill = color === 'rgb(81, 81, 81)' ? '#1296db' : '#515151'
+                            }
+                        } onMouseOut={
+                            () => {
+                                if (this.state.isSelect) return
+                                const color:string = document.getElementById('gly-button')!.style.fill
+                                document.getElementById('gly-button')!.style.fill = color === 'rgb(81, 81, 81)' ? '#1296db' : '#515151'
+                                // document.getElementById('select-button')!.style.fill = '#515151'
+                            }
+                        }>
+                            <path id='gly-button' d="M838.144 954.88c-52.736 27.136-116.736 7.68-143.872-42.496-20.992-39.424-15.36-87.552 13.824-119.296l-40.96-77.312c-20.992 6.144-44.032 10.752-66.56 10.752-101.376 0-184.832-72.704-201.216-166.4h-84.48c-15.36 40.96-54.272 69.632-99.84 69.632-58.88 0-105.984-47.104-105.984-105.984S156.16 417.792 215.04 417.792c45.568 0 84.48 27.136 99.84 68.096h86.016c17.92-93.696 101.376-161.792 201.216-161.792 16.896 0 33.28 1.536 47.104 4.608l34.816-81.92c-33.28-28.672-44.032-77.312-25.6-119.296 22.528-54.272 84.48-80.384 139.264-57.344 54.272 22.528 80.384 84.48 57.344 139.264-17.92 42.496-58.88 66.56-101.376 65.024l-36.352 84.48c54.272 36.352 89.088 98.304 89.088 166.4 0 61.952-28.672 118.272-74.24 155.648l40.96 77.312c42.496-6.144 86.016 15.36 109.056 54.272 28.672 48.64 9.216 113.664-44.032 142.336z m0 0" 
+                                style={{
+                                    fill: '#515151'
+                                }}
+                            />
+                        </svg>
                         <svg width="18" height="18" viewBox="0 0 1024 1024" style={{
                             position: 'absolute',
                             top: '5px',
-                            right: '50px'
+                            right: '80px',
+                            zIndex: 9
                         }} onClick={
                             () => {
                                 this.setState({ isSelect: true })
@@ -164,16 +283,48 @@ class Scatter extends Component <ScatterProps, ScatterState>{
                                 }}
                             /> 
                         </svg>
+                        <svg viewBox="0 0 1024 1024" width="18" height="18" style={{
+                            position: 'absolute',
+                            top: '5px',
+                            right: '50px',
+                            zIndex: 9
+                        }} onClick={
+                            () => {
+                                
+                            }
+                        } onMouseOver={
+                            () => {
+                                if (this.state.isSelect) return
+                                const color:string = document.getElementById('return-button')!.style.fill
+                                document.getElementById('return-button')!.style.fill = color === 'rgb(81, 81, 81)' ? '#1296db' : '#515151'
+                            }
+                        } onMouseOut={
+                            () => {
+                                if (this.state.isSelect) return
+                                const color:string = document.getElementById('return-button')!.style.fill
+                                document.getElementById('return-button')!.style.fill = color === 'rgb(81, 81, 81)' ? '#1296db' : '#515151'
+                                // document.getElementById('select-button')!.style.fill = '#515151'
+                            }
+                        }>
+                            <path id='return-button' d="M615.5 266.8H188.6l128.2-128.2c10.3-10.3 14.2-25.1 10.4-39.1-3.8-13.9-14.7-24.8-28.6-28.6-13.9-3.8-28.9 0.3-39.1 10.4l-172.2 172c-15 15-23.4 35.3-23.4 56.6-0.2 21.5 8.2 42.1 23.4 57.2l172.2 172.2c7.6 7.6 17.9 11.9 28.6 11.9 10.8 0 21-4.3 28.6-11.9 7.6-7.6 11.9-17.9 11.9-28.6s-4.3-21-11.9-28.6l-135-134.7h433.8c145.3 0 263.6 117.9 263.6 263.1S760.9 873.6 615.6 873.6H332.9c-22.3 0-40.5 18.2-40.5 40.5s18.2 40.5 40.5 40.5h282.5c189.9 0 344.5-154.3 344.5-344s-154.5-344-344.4-343.8" 
+                                style={{
+                                    fill: 'rgb(81, 81, 81)'
+                                }}
+                            />
+                        
+                        </svg>
                         <svg width="18" height="18" viewBox="0 0 1024 1024" style={{
                             position: 'absolute',
                             top: '5px',
-                            right: '20px'
+                            right: '20px',
+                            zIndex: 9
                         }} onClick={
                             () => {
                                 this.setState({ isSelect: false })
                                 this.isSelecting = false
                                 document.getElementById('select-button')!.style.fill = '#515151'
                                 this.props.selectTree({})
+                                this.setState({isShowGly: false, clusterNumber: -1})
                             }
                         } onMouseOver={
                             () => {
@@ -218,10 +369,28 @@ class Scatter extends Component <ScatterProps, ScatterState>{
         )
     }
 
+    public componentDidMount(): void {
+        // 6.067597034837224 505.78566276608035 3.601900295104632 307.59162290470863
+        axios.get('http://localhost:3000/data/path2.json')
+            .then((res:AxiosResponse<any>) => {
+                console.log(res.data);
+            })
+    }
+    private selectPointsByLabel(labelBySelect: number): void {
+        const {scatterData} = this.props
+        const selectList: {[id: string]: boolean} = {}
+        scatterData.forEach((value: ScatterType) => {
+            const {type, label} = value
+            selectList[type] = label === labelBySelect
+        })
+        // console.log(selectList);
+        this.props.selectTree(selectList)
+    }
+
     private selectPoints(): void {
         const {scatterData} = this.props
         const selectList: {[id: string]: boolean} = {}
-        console.log( this.pos, this.width, this.height)
+        // console.log( this.pos, this.width, this.height)
         // console.log(scatterData);
         scatterData.forEach((value: ScatterType) => {
             const {type, coor} = value
@@ -238,6 +407,15 @@ class Scatter extends Component <ScatterProps, ScatterState>{
         this.props.selectTree(selectList)
     }
 
+    private showGly(label: number): void {
+        this.setState({isShowGly: true})
+        axios.get(`/getGly?cluster_index=${label}`)
+            .then((res:AxiosResponse<any>) => {
+                console.log(res.data);
+                this.setState({glyData: res.data})
+
+            })
+    }
 
 }
 

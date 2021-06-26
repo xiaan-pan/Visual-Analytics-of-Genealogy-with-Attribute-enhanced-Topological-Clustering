@@ -28,7 +28,7 @@ def dataset_reader(path):
 def Kernel_pls(file_dir, attrList):
     files = os.listdir(file_dir) # file_dir 目录下所有的文件名
     G, attrs = [], []
-    keys = ['PN', 'AA', 'VN', 'TS', 'AG']
+    keys = ['VN', 'AA', 'TS']
     for file in files:
         List = list(dataset_reader(file_dir + file))
         G.append([List[0].edges,List[1]])
@@ -36,6 +36,8 @@ def Kernel_pls(file_dir, attrList):
     wl_kernel = WeisfeilerLehman(n_iter=5, normalize=True, base_graph_kernel=VertexHistogram)
     G_train = wl_kernel.fit_transform(G).tolist()
     print("graphKernel Training finished")
+    l = len(G_train)
+    # print(max([G_train[i][j] for i in range(l) for j in range(l)]))
     pls2 = PLSRegression(n_components=2)
     p = pls2.fit_transform(G_train, attrs)
     p0 = p[0].tolist()
@@ -45,9 +47,11 @@ def Kernel_pls(file_dir, attrList):
     tsne = TSNE(n_components=2).fit_transform(data_by_merge).tolist()
     final = [{
         'type': int(files[index].strip('.json')),
-        'coor': coor
+        'coor': coor,
+        'attr': attrList[int(files[index].strip('.json'))]
     } for index, coor in enumerate(tsne)]
-    with open('./data/data_by_tsne.json', 'w', encoding='utf8') as file:
+
+    with open('./data/data_by_tsne_VN_AA_TS.json', 'w', encoding='utf8') as file:
         json.dump(final, file)
 
 

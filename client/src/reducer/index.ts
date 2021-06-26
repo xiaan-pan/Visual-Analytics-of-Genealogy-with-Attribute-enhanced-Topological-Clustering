@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux'
 import { CHANGE_CLUSTER_NUMBER, CHANGE_SCATTER_LOADING, SELECT_TREE } from '../types/actionTypes'
-import { LinesViewType, scatterViewType, storeType } from '../types/propsTypes'
+import { LinesViewType, scatterViewType, storeType, treesViewType } from '../types/propsTypes'
 
 
 const initStore:storeType = {
@@ -15,6 +15,9 @@ const initStore:storeType = {
         isLoading: false,
         isLoadingText: '降维中...',
         attrs: [],
+        selectList: {}
+    },
+    trees: {
         selectList: {}
     }
 }
@@ -72,9 +75,23 @@ const linesReducer = (state: LinesViewType = initStore.lines, action: any) => {
     return state
 }
 
+const treesReducer = (state: treesViewType = initStore.trees, action: any) => {
+    const { type } = action
+
+    if (type === SELECT_TREE) {
+        const {selectList} = action
+        return {
+            ...state,
+            selectList
+        }
+    }
+    return state
+}
+
 const combineReducer = combineReducers({
     scatter: scatterReducer,
-    lines: linesReducer
+    lines: linesReducer,
+    trees: treesReducer
 })
 const reducer = (state:storeType = initStore, action:any) => {
     const store1:storeType = combineReducer(state, action)

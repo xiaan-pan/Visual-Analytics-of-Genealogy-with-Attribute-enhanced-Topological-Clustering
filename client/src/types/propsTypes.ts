@@ -21,7 +21,7 @@ export interface LinesViewType extends scatterViewType {
     attrs: Array<string>
 }
 
-export interface treesViewType extends scatterViewType {
+export interface treesViewType {
     selectList: {[id: string]: boolean}
 }
 

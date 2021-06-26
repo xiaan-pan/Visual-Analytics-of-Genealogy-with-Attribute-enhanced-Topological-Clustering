@@ -4,8 +4,9 @@ from sklearn.cluster import KMeans
 
 if __name__=='__main__':
     cluster_number = int(sys.argv[1])
+    properties = sys.argv[2] if len(sys.argv) == 3 else ''
     # cluster_number = 6
-    trees = json.load(open('./data/data_by_tsne.json'))
+    trees = json.load(open('./data/data_by_tsne' + properties + '.json'))
     transfer = KMeans(n_clusters=cluster_number)
     transfer.fit([tree['coor'] for tree in trees])
     labels = [int(v) for v in transfer.labels_]

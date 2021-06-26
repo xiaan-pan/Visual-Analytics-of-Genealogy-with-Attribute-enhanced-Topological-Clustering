@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { InputNumber, Button, Switch, Slider } from 'antd'
+import { InputNumber, Button, Switch, Slider, Select } from 'antd'
 import { CloseOutlined, CheckOutlined } from '@ant-design/icons';
 import axios, { AxiosResponse } from 'axios';
 
@@ -29,10 +29,14 @@ interface ConsoleState {
     av: number
 }
 class Console extends Component <ConsoleProps, ConsoleState>{
+    private isSelectList: Array<boolean>
+    private selectList: string
     public constructor(props : ConsoleProps) {
         super(props)
+        this.isSelectList = [false, false, false, false, false]
+        this.selectList = ''
         this.state = {
-            clusterNumber: 6,
+            clusterNumber: 9,
             scatterIsLoading: false,
             scatterIsLoadingText: 'Reducing',
             scatterData: [],
@@ -44,9 +48,10 @@ class Console extends Component <ConsoleProps, ConsoleState>{
     }
     
     public render() : JSX.Element {
+        const { Option } = Select;
         const { clusterNumber, scatterIsLoading, scatterIsLoadingText } = this.state
         const { changeScatterLoading } = this.props
-        const properties:Array<string> = ['attributes:', 'PN', 'VN', 'AA', 'TS', 'AG', 'AW', 'NN', 'AS', 'AWS']
+        const properties:Array<string> = ['PN', 'VN', 'AA', 'TS', 'AG']
         return (
             <div className='console-view'>
                 <div className='console-title'>Control Panel</div>
@@ -55,7 +60,7 @@ class Console extends Component <ConsoleProps, ConsoleState>{
                         <div className='cluster-text'>
                             cluster number:
                         </div>
-                        <InputNumber size="small" min={1} max={10} value={clusterNumber} 
+                        <InputNumber size="small" min={1} max={100} value={clusterNumber} 
                             onChange = {
                                 (value:number) => {
                                     // console.log(value);
@@ -73,7 +78,7 @@ class Console extends Component <ConsoleProps, ConsoleState>{
                                 height: '25px',
                                 lineHeight: '23px',
                                 padding: '0px 5px',
-                                marginRight: '5px',
+                                marginRight: '3px',
                                 fontSize: '15px',
                                 float: 'right'
                             }}
@@ -95,128 +100,82 @@ class Console extends Component <ConsoleProps, ConsoleState>{
                         >
                             {scatterIsLoading ? scatterIsLoadingText : 'project'}
                         </Button>
-                        {/* <Button type="primary" 
-                            style = {{
-                                height: '25px',
-                                lineHeight: '23px',
-                                padding: '0px 5px',
-                                marginRight: '10px',
-                                float: 'right',
-                                fontSize: '14px'
-                            }}
-                            onClick = {
-                                () => {
-                                    this.setState({scatterIsLoading: false})
-                                    changeScatterLoading(false, '降维中...')
-                                }
-                            }
-                        >
-                            取消
-                        </Button> */}
+                        
                     </div>
-                    {/* <div className='scatter-settings-view2'>
-                        <Switch
-                            checkedChildren={<CheckOutlined />}
-                            unCheckedChildren={<CloseOutlined />}
-                            checked={this.state.isSV}
-                            size='small'
-                            onChange={
-                                (isSV: boolean) => {
-                                    this.setState({isSV})
-                                }
-                            }
-                        />
+                    
+                    
+                    <div style={{
+                        // backgroundColor: 'red',
+                        width: '100%',
+                        height: '30px'
+                    }}>
                         <div style={{
-                            width: '180px',
-                            height: '100%',
-                            lineHeight: '35px',
-                            fontSize: '15px',
-                            fontFamily: 'Arial',
                             display: 'inline-block',
-                            // backgroundColor: 'red',
-                            paddingLeft: '12px'
-                            // textAlign: 'center'
-                        }}>
-                            structure weight: [{this.state.sv.toFixed(2)}]
-                        </div>
-                    </div> */}
-                    {/* <Slider tooltipVisible={false} max={1} min={0} step={0.01} value={this.state.sv} style={{
                             width: '100px',
-                            position: 'absolute',
-                            top: '65px',
-                            left: '210px'
-                        }} onChange={
-                            (sv:number) => {
-                                this.setState({sv, av: 1 - sv})
-                                
+                            fontSize: '17px',
+                            marginRight: '35px'
+                        }}>
+                            attributes:
+                        </div>
+                        <Select
+                            mode="multiple"
+                            showArrow
+                            // tagRender={tagRender}
+                            defaultValue={[]}
+                            // style={{ width: '340px' }}
+                            options={
+                                properties.map((value: string) => ({value}))
                             }
-                        }/> */}
-                    <div className='scatter-settings-view2'>
-                        <Switch
-                            checkedChildren={<CheckOutlined />}
-                            unCheckedChildren={<CloseOutlined />}
-                            checked={this.state.isAV}
-                            size='small'
+                            listItemHeight={10}
                             onChange={
-                                (isAV: boolean) => {
-                                    this.setState({isAV})
+                                (e:Array<string>) => {
+                                    // console.log(e);
+                                    properties.forEach((value: string, index: number) => {
+                                        if (e.includes(value)) {
+                                            this.isSelectList[index] = true
+                                        } else {
+                                            this.isSelectList[index] = false
+                                        }
+                                    })
                                 }
                             }
                         />
-                        <div style={{
-                            width: '180px',
-                            height: '100%',
-                            lineHeight: '35px',
-                            fontSize: '15px',
-                            fontFamily: 'Arial',
-                            display: 'inline-block',
-                            // backgroundColor: 'red',
-                            paddingLeft: '15px'
-                            // textAlign: 'center'
-                        }}>
-                            attribute weight: [{this.state.av.toFixed(2)}]
-                        </div>
                     </div>
-                    <Slider tooltipVisible={false} max={1} min={0} step={0.01} value={this.state.av} style={{
-                        width: '100px',
-                        position: 'absolute',
-                        top: '100px',
-                        left: '210px'
-                    }} onChange={
-                        (av:number) => {
-                            this.setState({av, sv: 1 - av})
-                        }
-                    }/>
                     {
-                        properties.map((value: string, index: number) => (
-                            <div key={'property' + index} style={{
-                                width: '20%',
-                                height: '35px',
-                                // backgroundColor: index % 2 ? 'red' : 'blue',
-                                // display: 'inline-block',
-                                float: 'left',
-                                // marginRight: '0.3%',
-                                lineHeight: index === 0  ? '35px' : '40px',
-                                padding: '0px 0px 0px ' + (index % 5 === 0 ? '5px' : '12px')
-                            }}>
-                                <input type="checkbox" id={value} style={{
-                                    display: index === 0 ? 'none' : 'inline-block'
-                                }}/>
-                                <div style={{
-                                    height: '100%',
-                                    // float: 'left',
-                                    display: 'inline-block',
-                                    background: 'white',
-                                    marginLeft: index === 0 ? '0px' : '5px'
-                                }}>
-                                    {value}
-                                </div>
-                            </div>
-                        ))
+                        // properties.map((value: string, index: number) => (
+                        //     <div key={'property' + index} style={{
+                        //         width: '20%',
+                        //         height: '35px',
+                        //         // backgroundColor: index % 2 ? 'red' : 'blue',
+                        //         // display: 'inline-block',
+                        //         float: 'left',
+                        //         // marginRight: '0.3%',
+                        //         lineHeight: index === 0  ? '35px' : '40px',
+                        //         padding: '0px 0px 0px ' + (index % 5 === 0 ? '5px' : '12px')
+                        //     }}>
+                        //         <input type="checkbox" id={value} style={{
+                        //             display: index === 0 ? 'none' : 'inline-block'
+                        //         }}/>
+                        //         <div style={{
+                        //             height: '100%',
+                        //             // float: 'left',
+                        //             display: 'inline-block',
+                        //             background: 'white',
+                        //             marginLeft: index === 0 ? '0px' : '5px'
+                        //         }}>
+                        //             {value}
+                        //         </div>
+                        //     </div>
+                        // ))
                     }
                 </div>
             </div>
         )
+    }
+
+    public componentDidMount(): void {
+        ;(document.getElementsByClassName('ant-select-multiple')[0] as any).style.width = '290px'
+        // ;(document.getElementsByClassName('ant-select-multiple')[0] as any).style.height = '20px'
     }
     
     private changeScatter(): void {
@@ -242,13 +201,20 @@ class Console extends Component <ConsoleProps, ConsoleState>{
         //         //     this.setState({isLoading: false})
         //         // })
         //     })
+        const properties:Array<string> = ['PN', 'VN', 'AA', 'TS', 'AG']
+        this.selectList = ''
+        this.isSelectList.map((value: boolean, index: number) => {
+            if (value) {
+                this.selectList += ('_' + properties[index])
+            }
+        })
         setTimeout(() => {
             changeScatterLoading(true, 'Clustering')
             this.setState({scatterIsLoadingText: 'Clustering'}, () => {
-                axios.get('/cluster?cluster_number=' + this.state.clusterNumber)
+                axios.get(`/cluster?cluster_number=${this.state.clusterNumber}&properties=${this.selectList}`)
                     .then((res:AxiosResponse<any>) => {
                         const {data: scatterData} = res
-                        console.log(typeof scatterData);
+                        // console.log(typeof scatterData);
                         changeClusterNumber(scatterData, ['PN', 'AA', 'VN', 'TS', 'AG'])
                         changeScatterLoading(false, 'Reducing dimensions')
                         this.setState({scatterIsLoading: false, scatterIsLoadingText: 'Reducing'})
